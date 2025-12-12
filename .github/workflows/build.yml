@@ -21,7 +21,8 @@ jobs:
           cd ..
           git clone --single-branch --depth=1 --recurse-submodules https://github.com/topjohnwu/Magisk magiskd-build
           cd magiskd-build
-          sed -E 's/constexpr +Applet +applets\[\] *= *\{/constexpr Applet applets[] = {\n{ "zygisk", zygisk_main },/g' -i native/src/core/applets.cpp
+          cp native/src/core/applets.cpp /tmp/patch
+          sed -E 's/constexpr +Applet +applets\[\] *= *\{/constexpr Applet applets[] = {\n{ "zygisk", zygisk_main },/g' /tmp/patch > native/src/core/applets.cpp
           cat native/src/core/applets.cpp
 
       - name: Setup environment
