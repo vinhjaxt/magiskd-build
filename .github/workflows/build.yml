@@ -1,0 +1,62 @@
+name: Magisk Build
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - ".github/workflows/build.yml"
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Magisk artifacts
+    runs-on: macos-15
+    strategy:
+      fail-fast: false
+    steps:
+      - name: Check out
+        run: |
+          cd ..
+          git clone --single-branch --depth=1 --recurse-submodules https://github.com/topjohnwu/Magisk magiskd-build
+          cd magiskd-build
+
+      - name: Setup environment
+        uses: ./.github/actions/setup
+        with:
+          is-asset-build: true
+
+      - name: Build release
+        run: ./build.py -vr all
+
+      - name: Build debug
+        run: ./build.py -v all
+
+      - name: Stop gradle daemon
+        run: ./app/gradlew --stop
+
+      # Create release
+      - name: Generate release tag
+        id: tag
+        run: |
+          sudo timedatectl set-timezone Asia/Ho_Chi_Minh
+          sudo date -s "$(wget -qSO- --max-redirect=0 google.com 2>&1 | grep Date: | cut -d' ' -f5-8)Z"
+          echo "release_tag=Go_build_$(date +"%Y.%m.%d_%H-%M-%S")" >> $GITHUB_OUTPUT
+          echo "release_hash=$(git log --format="%H" -n 1)" >> $GITHUB_OUTPUT
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          body: ${{ steps.tag.outputs.release_hash }}
+          tag_name: ${{ steps.tag.outputs.release_tag }}
+          files: |
+            app/apk/build/outputs
+            out
+      # Done release
+
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: write
+  pages: write
+  id-token: write
