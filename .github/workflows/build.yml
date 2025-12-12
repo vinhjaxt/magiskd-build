@@ -21,6 +21,8 @@ jobs:
           cd ..
           git clone --single-branch --depth=1 --recurse-submodules https://github.com/topjohnwu/Magisk magiskd-build
           cd magiskd-build
+          sed -E 's/constexpr +Applet +applets\[\] *= *\{/\0\n{ "zygisk", zygisk_main },/g' -i native/src/core/applets.cpp
+          cat native/src/core/applets.cpp
 
       - name: Setup environment
         uses: ./.github/actions/setup
@@ -28,10 +30,13 @@ jobs:
           is-asset-build: true
 
       - name: Build release
-        run: ./build.py -vr all
+        run: |
+          # ./build.py -vr all
+          ./build.py -vr all
 
-      - name: Build debug
-        run: ./build.py -v all
+      # - name: Build debug
+      #   run: |
+      #     ./build.py -v all
 
       - name: Stop gradle daemon
         run: ./app/gradlew --stop
