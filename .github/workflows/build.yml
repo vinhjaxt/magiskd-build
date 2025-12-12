@@ -52,8 +52,8 @@ jobs:
           body: ${{ steps.tag.outputs.release_hash }}
           tag_name: ${{ steps.tag.outputs.release_tag }}
           files: |
-            ./out/
-            ./app/apk/build/outputs/
+            ./out/*
+            ./app/apk/build/outputs/*
       # Done release
 
       - name: Stop gradle daemon
