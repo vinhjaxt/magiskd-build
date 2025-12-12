@@ -1,0 +1,52 @@
+name: Magisk Build
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - ".github/workflows/build.yml"
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Magisk artifacts
+    runs-on: macos-15
+    strategy:
+      fail-fast: false
+    steps:
+      - name: Check out
+        run: |
+          cd ..
+          git clone --single-branch --depth=1 --recurse-submodules https://github.com/topjohnwu/Magisk magiskd-build
+          cd magiskd-build
+
+      - name: Setup environment
+        uses: ./.github/actions/setup
+        with:
+          is-asset-build: true
+
+      - name: Build release
+        run: ./build.py -vr all
+
+      - name: Build debug
+        run: ./build.py -v all
+
+      - name: Stop gradle daemon
+        run: ./app/gradlew --stop
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.sha }}
+          path: out
+          compression-level: 9
+
+      - name: Upload mapping and native debug symbols
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.sha }}-symbols
+          path: app/apk/build/outputs
+          compression-level: 9
+
