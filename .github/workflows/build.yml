@@ -35,7 +35,7 @@ jobs:
           # ./build.py -vr all
           ./build.py -vr all
           ls -alvh *
-          zip -r output.zip ./app/apk/build/outputs
+          zip -r /tmp/output.zip ./app/apk/build/outputs
 
       # - name: Build debug
       #   run: |
@@ -54,7 +54,7 @@ jobs:
           tag_name: ${{ steps.tag.outputs.release_tag }}
           files: |
             ./out/*
-            ./outputs.zip
+            /tmp/outputs.zip*
       # Done release
 
       - name: Stop gradle daemon
